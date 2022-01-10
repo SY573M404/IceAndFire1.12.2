@@ -1,0 +1,18 @@
+[
+{
+  "modid": "iceandfire",
+  "name": "Ice and Fire",
+  "description": "Ice and Fire adds dragons and other mythological gayboys to Minecraft.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Alexthe666", "Raptorfarian"],
+  "credits": "gegy1000, Paul Fulham, Zyranna, 4f6f3b, iLexiconn, Sunconure11, Elucent",
+  "logoFile": "assets/iceandfire/textures/logo.png",
+  "screenshots": [],
+  "requiredMods": [ "llibrary", "forge" ],
+  "dependencies": [ "llibrary", "forge" ],
+  "useDependencyInformation": true
+}
+]
