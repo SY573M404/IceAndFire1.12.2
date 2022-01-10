@@ -48,6 +48,9 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.MinecraftForge;
+import system404.minecraft.iceandfire.AccessUtils;
+import system404.minecraft.iceandfire.EventConfig;
+import system404.minecraft.iceandfire.integration.griefdefender.GriefDefenderIntegration;
 
 import javax.annotation.Nullable;
 
@@ -303,12 +306,19 @@ public class EntityCyclops extends EntityMob implements IAnimatedEntity, IBlackl
                         IBlockState state = world.getBlockState(pos);
                         Block block = state.getBlock();
                         if (state.getMaterial() != Material.AIR && !(block instanceof BlockBush) && !(block instanceof BlockLiquid) && block != Blocks.BEDROCK && (state.getBlock().isLeaves(state, world, pos) || state.getBlock().canSustainLeaves(state, world, pos))) {
-                            this.motionX *= 0.6D;
-                            this.motionZ *= 0.6D;
-                            if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) continue;
-                            if (block != Blocks.AIR) {
-                                if (!world.isRemote) {
-                                    world.destroyBlock(pos, true);
+                            if(AccessUtils.hasEntityAccess(
+                                    world,
+                                    pos.getX(),
+                                    pos.getY(),
+                                    pos.getZ()
+                            )) {
+                                this.motionX *= 0.6D;
+                                this.motionZ *= 0.6D;
+                                if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) continue;
+                                if (block != Blocks.AIR) {
+                                    if (!world.isRemote) {
+                                        world.destroyBlock(pos, true);
+                                    }
                                 }
                             }
                         }

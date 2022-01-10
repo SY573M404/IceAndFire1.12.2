@@ -1,5 +1,6 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import com.gamerforea.eventhelper.util.EventUtils;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import net.ilexiconn.llibrary.server.entity.EntityPropertiesHandler;
 import net.minecraft.entity.Entity;
@@ -14,14 +15,22 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import system404.minecraft.iceandfire.EventConfig;
+import system404.minecraft.iceandfire.integration.griefdefender.GriefDefenderIntegration;
 
 public class EntityDragonIceCharge extends EntityFireball implements IDragonProjectile {
-
     public int ticksInAir;
+    public EntityPlayer owner;
 
     public EntityDragonIceCharge(World worldIn) {
         super(worldIn);
+    }
 
+
+    public EntityDragonIceCharge(World worldIn, EntityPlayer owner) {
+        super(worldIn);
+
+        this.owner = owner;
     }
 
     public EntityDragonIceCharge(World worldIn, double posX, double posY, double posZ, double accelX, double accelY, double accelZ) {
@@ -32,8 +41,26 @@ public class EntityDragonIceCharge extends EntityFireball implements IDragonProj
         this.accelerationZ = accelZ / d0 * 0.07D;
     }
 
+    public EntityDragonIceCharge(World worldIn, EntityPlayer owner, double posX, double posY, double posZ, double accelX, double accelY, double accelZ) {
+        super(worldIn, posX, posY, posZ, accelX, accelY, accelZ);
+        this.owner = owner;
+        double d0 = MathHelper.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ);
+        this.accelerationX = accelX / d0 * 0.07D;
+        this.accelerationY = accelY / d0 * 0.07D;
+        this.accelerationZ = accelZ / d0 * 0.07D;
+    }
+
     public EntityDragonIceCharge(World worldIn, EntityDragonBase shooter, double accelX, double accelY, double accelZ) {
         super(worldIn, shooter, accelX, accelY, accelZ);
+        double d0 = MathHelper.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ);
+        this.accelerationX = accelX / d0 * 0.07D;
+        this.accelerationY = accelY / d0 * 0.07D;
+        this.accelerationZ = accelZ / d0 * 0.07D;
+    }
+
+    public EntityDragonIceCharge(World worldIn, EntityPlayer owner, EntityDragonBase shooter, double accelX, double accelY, double accelZ) {
+        super(worldIn, shooter, accelX, accelY, accelZ);
+        this.owner = owner;
         double d0 = MathHelper.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ);
         this.accelerationX = accelX / d0 * 0.07D;
         this.accelerationY = accelY / d0 * 0.07D;
@@ -121,7 +148,7 @@ public class EntityDragonIceCharge extends EntityFireball implements IDragonProj
                             return;
                         }
                         if (shootingEntity != null && IceAndFire.CONFIG.dragonGriefing != 2) {
-                            IafDragonDestructionManager.destroyAreaIceCharge(world, new BlockPos(posX, posY, posZ), ((EntityDragonBase) shootingEntity));
+                            IafDragonDestructionManager.destroyAreaIceCharge(world, owner, new BlockPos(posX, posY, posZ), ((EntityDragonBase) shootingEntity));
                         }
                         if (dragon != null) {
                             dragon.randomizeAttacks();
@@ -150,7 +177,7 @@ public class EntityDragonIceCharge extends EntityFireball implements IDragonProj
                     }
                     this.applyEnchantments(shootingEntity, movingObject.entityHit);
                     if (shootingEntity instanceof EntityDragonBase) {
-                        IafDragonDestructionManager.destroyAreaIceCharge(world, new BlockPos(posX, posY, posZ), ((EntityDragonBase) shootingEntity));
+                        IafDragonDestructionManager.destroyAreaIceCharge(world, owner, new BlockPos(posX, posY, posZ), ((EntityDragonBase) shootingEntity));
                     }
                     this.setDead();
                 }

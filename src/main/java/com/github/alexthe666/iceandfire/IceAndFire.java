@@ -42,6 +42,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import system404.minecraft.iceandfire.EventConfig;
 
 import java.io.File;
 import java.util.Random;
@@ -87,6 +88,8 @@ public class IceAndFire {
         }
         config = new Configuration(configFile);
         config.load();
+
+        EventConfig.init();
     }
 
     public static void syncConfig() {
@@ -120,6 +123,7 @@ public class IceAndFire {
         IafVillagerRegistry.INSTANCE.init();
         logger.info("The watcher waits on the northern wall");
         logger.info("A daughter picks up a warrior's sword");
+        logger.info("A gayboy doing fisting ass");
         MapGenStructureIO.registerStructure(MapGenSnowVillage.Start.class, "SnowVillageStart");
         MapGenStructureIO.registerStructureComponent(ComponentAnimalFarm.class, "AnimalFarm");
         VillagerRegistry.instance().registerVillageCreationHandler(new VillageAnimalFarmCreator());

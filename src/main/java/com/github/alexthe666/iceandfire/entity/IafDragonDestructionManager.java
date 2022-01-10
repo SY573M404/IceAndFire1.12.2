@@ -13,14 +13,16 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import system404.minecraft.iceandfire.AccessUtils;
 
 public class IafDragonDestructionManager {
-    public static void destroyAreaFire(World world, BlockPos center, EntityDragonBase destroyer) {
+    public static void destroyAreaFire(World world, EntityPlayer initiator, BlockPos center, EntityDragonBase destroyer) {
         if (MinecraftForge.EVENT_BUS.post(new DragonFireDamageWorldEvent(destroyer, center.getX(), center.getY(), center.getZ()))) return;
         int stage = destroyer.getDragonStage();
         double damageRadius = 3.5D;
@@ -29,15 +31,20 @@ public class IafDragonDestructionManager {
             for (BlockPos pos : BlockPos.getAllInBox(center.add(-1, -1, -1), center.add(1, 1, 1))) {
                 if (IceAndFire.CONFIG.dragonGriefing != 2 && world.rand.nextBoolean()) {
                     if (!(world.getBlockState(pos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(pos).getBlock())) {
-                        IBlockState transformState = transformBlockFire(world.getBlockState(pos));
-                        world.setBlockState(pos, transformState);
-                        if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
-                            world.setBlockState(pos.up(), Blocks.FIRE.getDefaultState());
+                        if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                            IBlockState transformState = transformBlockFire(world.getBlockState(pos));
+                            world.setBlockState(pos, transformState);
+
+                            if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
+                                world.setBlockState(pos.up(), Blocks.FIRE.getDefaultState());
+                            }
                         }
                     }
                 }
-                if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityDragonforgeInput) {
-                    ((TileEntityDragonforgeInput) world.getTileEntity(pos)).onHitWithFlame();
+                if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                    if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityDragonforgeInput) {
+                        ((TileEntityDragonforgeInput) world.getTileEntity(pos)).onHitWithFlame();
+                    }
                 }
             }
             for (EntityLivingBase entityliving : world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB((double) center.getX() - damageRadius, (double) center.getY() - damageRadius, (double) center.getZ() - damageRadius, (double) center.getX() + damageRadius, (double) center.getY() + damageRadius, (double) center.getZ() + damageRadius))) {
@@ -57,16 +64,20 @@ public class IafDragonDestructionManager {
                 if (blockpos.distanceSq(center) <= (double) (f * f)) {
                     if (IceAndFire.CONFIG.dragonGriefing != 2 && world.rand.nextFloat() > (float) blockpos.distanceSq(center) / (f * f)) {
                         if (!(world.getBlockState(blockpos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(blockpos).getBlock())) {
-                            IBlockState transformState = transformBlockFire(world.getBlockState(blockpos));
-                            world.setBlockState(blockpos, transformState);
-                            if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
-                                world.setBlockState(blockpos.up(), Blocks.FIRE.getDefaultState());
+                            if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                                IBlockState transformState = transformBlockFire(world.getBlockState(blockpos));
+                                world.setBlockState(blockpos, transformState);
+                                if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
+                                    world.setBlockState(blockpos.up(), Blocks.FIRE.getDefaultState());
+                                }
                             }
                         }
                     }
                 }
-                if (world.getTileEntity(blockpos) != null && world.getTileEntity(blockpos) instanceof TileEntityDragonforgeInput) {
-                    ((TileEntityDragonforgeInput) world.getTileEntity(blockpos)).onHitWithFlame();
+                if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                    if (world.getTileEntity(blockpos) != null && world.getTileEntity(blockpos) instanceof TileEntityDragonforgeInput) {
+                        ((TileEntityDragonforgeInput) world.getTileEntity(blockpos)).onHitWithFlame();
+                    }
                 }
             }
             for (EntityLivingBase entityliving : world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB((double) center.getX() - damageRadius, (double) center.getY() - damageRadius, (double) center.getZ() - damageRadius, (double) center.getX() + damageRadius, (double) center.getY() + damageRadius, (double) center.getZ() + damageRadius))) {
@@ -78,7 +89,7 @@ public class IafDragonDestructionManager {
         }
     }
 
-    public static void destroyAreaIce(World world, BlockPos center, EntityDragonBase destroyer) {
+    public static void destroyAreaIce(World world, EntityPlayer initiator, BlockPos center, EntityDragonBase destroyer) {
         if (MinecraftForge.EVENT_BUS.post(new DragonFireDamageWorldEvent(destroyer, center.getX(), center.getY(), center.getZ()))) return;
         int stage = destroyer.getDragonStage();
         double damageRadius = 3.5D;
@@ -87,15 +98,19 @@ public class IafDragonDestructionManager {
             for (BlockPos pos : BlockPos.getAllInBox(center.add(-1, -1, -1), center.add(1, 1, 1))) {
                 if (IceAndFire.CONFIG.dragonGriefing != 2 && world.rand.nextBoolean()) {
                     if (!(world.getBlockState(pos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(pos).getBlock())) {
-                        IBlockState transformState = transformBlockIce(world.getBlockState(pos));
-                        world.setBlockState(pos, transformState);
-                        if (world.rand.nextInt(9) == 0 && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
-                            world.setBlockState(pos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                        if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                            IBlockState transformState = transformBlockIce(world.getBlockState(pos));
+                            world.setBlockState(pos, transformState);
+                            if (world.rand.nextInt(9) == 0 && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
+                                world.setBlockState(pos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                            }
                         }
                     }
                 }
-                if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityDragonforgeInput) {
-                    ((TileEntityDragonforgeInput) world.getTileEntity(pos)).onHitWithFlame();
+                if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                    if (world.getTileEntity(pos) != null && world.getTileEntity(pos) instanceof TileEntityDragonforgeInput) {
+                        ((TileEntityDragonforgeInput) world.getTileEntity(pos)).onHitWithFlame();
+                    }
                 }
             }
             for (EntityLivingBase entityliving : world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB((double) center.getX() - damageRadius, (double) center.getY() - damageRadius, (double) center.getZ() - damageRadius, (double) center.getX() + damageRadius, (double) center.getY() + damageRadius, (double) center.getZ() + damageRadius))) {
@@ -118,16 +133,20 @@ public class IafDragonDestructionManager {
                 if (blockpos.distanceSq(center) <= (double) (f * f)) {
                     if (IceAndFire.CONFIG.dragonGriefing != 2 && world.rand.nextFloat() > (float) blockpos.distanceSq(center) / (f * f)) {
                         if (!(world.getBlockState(blockpos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(blockpos).getBlock())) {
-                            IBlockState transformState = transformBlockIce(world.getBlockState(blockpos));
-                            world.setBlockState(blockpos, transformState);
-                            if (world.rand.nextInt(9) == 0 && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
-                                world.setBlockState(blockpos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                            if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                                IBlockState transformState = transformBlockIce(world.getBlockState(blockpos));
+                                world.setBlockState(blockpos, transformState);
+                                if (world.rand.nextInt(9) == 0 && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
+                                    world.setBlockState(blockpos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                                }
                             }
                         }
                     }
                 }
-                if (world.getTileEntity(blockpos) != null && world.getTileEntity(blockpos) instanceof TileEntityDragonforgeInput) {
-                    ((TileEntityDragonforgeInput) world.getTileEntity(blockpos)).onHitWithFlame();
+                if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                    if (world.getTileEntity(blockpos) != null && world.getTileEntity(blockpos) instanceof TileEntityDragonforgeInput) {
+                        ((TileEntityDragonforgeInput) world.getTileEntity(blockpos)).onHitWithFlame();
+                    }
                 }
             }
             for (EntityLivingBase entityliving : world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB((double) center.getX() - damageRadius, (double) center.getY() - damageRadius, (double) center.getZ() - damageRadius, (double) center.getX() + damageRadius, (double) center.getY() + damageRadius, (double) center.getZ() + damageRadius))) {
@@ -211,23 +230,27 @@ public class IafDragonDestructionManager {
         }
     }
 
-    public static void destroyAreaIceCharge(World world, BlockPos center, EntityDragonBase destroyer) {
+    public static void destroyAreaIceCharge(World world, EntityPlayer initiator, BlockPos center, EntityDragonBase destroyer) {
         if (destroyer != null) {
             if (MinecraftForge.EVENT_BUS.post(new DragonFireDamageWorldEvent(destroyer, center.getX(), center.getY(), center.getZ()))) return;
             int stage = destroyer.getDragonStage();
             if (stage <= 3) {
                 for (BlockPos pos : BlockPos.getAllInBox(center.add(-2, -2, -2), center.add(2, 2, 2))) {
                     if (world.rand.nextFloat() > pos.distanceSq(center) && !(world.getBlockState(pos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(pos).getBlock())) {
-                        world.setBlockState(pos, Blocks.AIR.getDefaultState());
+                        if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                            world.setBlockState(pos, Blocks.AIR.getDefaultState());
+                        }
                     }
                 }
                 for (BlockPos pos : BlockPos.getAllInBox(center.add(-2, -2, -2), center.add(2, 2, 2))) {
                     if (world.rand.nextBoolean()) {
                         if (!(world.getBlockState(pos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(pos).getBlock())) {
-                            IBlockState transformState = transformBlockIce(world.getBlockState(pos));
-                            world.setBlockState(pos, transformState);
-                            if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
-                                world.setBlockState(pos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                            if(AccessUtils.hasPlayerAccess(initiator, world, pos)) {
+                                IBlockState transformState = transformBlockIce(world.getBlockState(pos));
+                                world.setBlockState(pos, transformState);
+                                if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(pos.up())) {
+                                    world.setBlockState(pos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                                }
                             }
                         }
                     }
@@ -250,7 +273,9 @@ public class IafDragonDestructionManager {
                 for (BlockPos blockpos : BlockPos.getAllInBox(center.add(-j, -k, -l), center.add(j, k, l))) {
                     if (blockpos.distanceSq(center) <= (double) (f * f)) {
                         if (world.rand.nextFloat() > (float) blockpos.distanceSq(center) / (f * f) && !(world.getBlockState(blockpos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(blockpos).getBlock())) {
-                            world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                            if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                                world.setBlockState(blockpos, Blocks.AIR.getDefaultState());
+                            }
                         }
                     }
                 }
@@ -260,10 +285,12 @@ public class IafDragonDestructionManager {
                 for (BlockPos blockpos : BlockPos.getAllInBox(center.add(-j, -k, -l), center.add(j, k, l))) {
                     if (blockpos.distanceSq(center) <= (double) (f * f)) {
                         if (!(world.getBlockState(blockpos).getBlock() instanceof IDragonProof) && DragonUtils.canDragonBreak(world.getBlockState(blockpos).getBlock())) {
-                            IBlockState transformState = transformBlockIce(world.getBlockState(blockpos));
-                            world.setBlockState(blockpos, transformState);
-                            if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
-                                world.setBlockState(blockpos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                            if(AccessUtils.hasPlayerAccess(initiator, world, blockpos)) {
+                                IBlockState transformState = transformBlockIce(world.getBlockState(blockpos));
+                                world.setBlockState(blockpos, transformState);
+                                if (world.rand.nextBoolean() && transformState.isFullBlock() && world.isAirBlock(blockpos.up())) {
+                                    world.setBlockState(blockpos.up(), IafBlockRegistry.dragon_ice_spikes.getDefaultState());
+                                }
                             }
                         }
                     }

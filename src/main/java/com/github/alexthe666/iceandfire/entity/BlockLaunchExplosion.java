@@ -20,6 +20,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import system404.minecraft.iceandfire.AccessUtils;
+import system404.minecraft.iceandfire.EventConfig;
+import system404.minecraft.iceandfire.integration.griefdefender.GriefDefenderIntegration;
 
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,15 @@ public class BlockLaunchExplosion extends Explosion {
 
     @Override
     public void doExplosionA() {
+        if(!AccessUtils.hasEntityAccess(
+                worldObj,
+                (int) Math.round(explosionX),
+                (int) Math.round(explosionY),
+                (int) Math.round(explosionZ)
+        )) {
+            return;
+        }
+
         Set<BlockPos> set = Sets.newHashSet();
         int i = 16;
         for (int j = 0; j < 16; ++j) {
@@ -79,7 +91,14 @@ public class BlockLaunchExplosion extends Explosion {
                             }
 
                             if (f > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this, this.worldObj, blockpos, iblockstate, f)) && iblockstate.getBlock().canEntityDestroy(iblockstate, this.worldObj, blockpos, this.exploder) && DragonUtils.canDragonBreak(iblockstate.getBlock())) {
-                                set.add(blockpos);
+                                if(AccessUtils.hasEntityAccess(
+                                        worldObj,
+                                        blockpos.getX(),
+                                        blockpos.getY(),
+                                        blockpos.getZ()
+                                )) {
+                                    set.add(blockpos);
+                                }
                             }
 
                             d4 += d0 * 0.30000001192092896D;

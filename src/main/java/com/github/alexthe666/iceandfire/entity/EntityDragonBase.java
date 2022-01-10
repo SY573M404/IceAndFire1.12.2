@@ -1,5 +1,6 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import com.gamerforea.eventhelper.util.EventUtils;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.api.FoodUtils;
 import com.github.alexthe666.iceandfire.api.event.GenericGriefEvent;
@@ -67,6 +68,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import system404.minecraft.iceandfire.AccessUtils;
+import system404.minecraft.iceandfire.EventConfig;
+import system404.minecraft.iceandfire.integration.griefdefender.GriefDefenderIntegration;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -1267,12 +1273,15 @@ public abstract class EntityDragonBase extends EntityTameable implements ISyncMo
                                     if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) continue;
                                     BlockPos pos = new BlockPos(a, b, c);
                                     IBlockState state = world.getBlockState(pos);
-                                    if (state.getMaterial().blocksMovement() && state.getBlockHardness(world, pos) >= 0F && state.getBlockHardness(world, pos) <= hardness && DragonUtils.canDragonBreak(state.getBlock()) && this.canDestroyBlock(pos)) {
-                                        this.motionX *= 0.6D;
-                                        this.motionZ *= 0.6D;
 
-                                        if (!world.isRemote) {
-                                            world.destroyBlock(pos, rand.nextFloat() <= IceAndFire.CONFIG.dragonBlockBreakingDropChance && DragonUtils.canDropFromDragonBlockBreak(state));
+                                    if (state.getMaterial().blocksMovement() && state.getBlockHardness(world, pos) >= 0F && state.getBlockHardness(world, pos) <= hardness && DragonUtils.canDragonBreak(state.getBlock()) && this.canDestroyBlock(pos)) {
+                                        if (AccessUtils.hasEntityAccess(world, pos.getX(), pos.getY(), pos.getZ())) {
+                                            this.motionX *= 0.6D;
+                                            this.motionZ *= 0.6D;
+
+                                            if (!world.isRemote) {
+                                                world.destroyBlock(pos, rand.nextFloat() <= IceAndFire.CONFIG.dragonBlockBreakingDropChance && DragonUtils.canDropFromDragonBlockBreak(state));
+                                            }
                                         }
                                     }
                                 }

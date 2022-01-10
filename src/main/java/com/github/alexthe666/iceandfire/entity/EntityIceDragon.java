@@ -262,7 +262,7 @@ public class EntityIceDragon extends EntityDragonBase {
                 d2 = d2 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                 d3 = d3 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                 d4 = d4 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
-                EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, this, d2, d3, d4);
+                EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, getRidingPlayer(), this, d2, d3, d4);
                 float size = this.isChild() ? 0.4F : this.isAdult() ? 1.3F : 0.8F;
                 entitylargefireball.setSizes(size, size);
                 entitylargefireball.setPosition(headVec.x, headVec.y, headVec.z);
@@ -318,7 +318,7 @@ public class EntityIceDragon extends EntityDragonBase {
                     d3 = d3 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                     d4 = d4 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                     this.playSound(IafSoundRegistry.ICEDRAGON_BREATH, 4, 1);
-                    EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, this, d2, d3, d4);
+                    EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, getRidingPlayer(), this, d2, d3, d4);
                     float size = this.isChild() ? 0.4F : this.isAdult() ? 1.3F : 0.8F;
                     entitylargefireball.setSizes(size, size);
                     entitylargefireball.setPosition(headVec.x, headVec.y, headVec.z);
@@ -383,7 +383,7 @@ public class EntityIceDragon extends EntityDragonBase {
                 d3 = d3 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                 d4 = d4 + this.rand.nextGaussian() * 0.007499999832361937D * (double) inaccuracy;
                 this.playSound(IafSoundRegistry.FIREDRAGON_BREATH, 4, 1);
-                EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, this, d2, d3, d4);
+                EntityDragonIceCharge entitylargefireball = new EntityDragonIceCharge(world, getRidingPlayer(), this, d2, d3, d4);
                 float size = this.isChild() ? 0.4F : this.isAdult() ? 1.3F : 0.8F;
                 entitylargefireball.setSizes(size, size);
                 entitylargefireball.setPosition(headVec.x, headVec.y, headVec.z);
@@ -417,7 +417,7 @@ public class EntityIceDragon extends EntityDragonBase {
                 if (!world.isRemote) {
                     RayTraceResult result = this.world.rayTraceBlocks(new Vec3d(this.posX, this.posY + (double) this.getEyeHeight(), this.posZ), new Vec3d(progressX, progressY, progressZ), false, true, false);
                     BlockPos pos = result.getBlockPos();
-                    IafDragonDestructionManager.destroyAreaIce(world, pos, this);
+                    IafDragonDestructionManager.destroyAreaIce(world, getRidingPlayer(), pos, this);
                 }
             }
         }
@@ -426,7 +426,7 @@ public class EntityIceDragon extends EntityDragonBase {
             double spawnY = burnY + (rand.nextFloat() * 3.0) - 1.5;
             double spawnZ = burnZ + (rand.nextFloat() * 3.0) - 1.5;
             if (!world.isRemote) {
-                IafDragonDestructionManager.destroyAreaIce(world, new BlockPos(spawnX, spawnY, spawnZ), this);
+                IafDragonDestructionManager.destroyAreaIce(world, getRidingPlayer(), new BlockPos(spawnX, spawnY, spawnZ), this);
             }
         }
     }
