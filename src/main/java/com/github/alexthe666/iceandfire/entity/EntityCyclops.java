@@ -1,5 +1,6 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import com.gamerforea.eventhelper.fake.FakePlayerContainer;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.api.event.GenericGriefEvent;
 import com.github.alexthe666.iceandfire.misc.IafSoundRegistry;
@@ -48,8 +49,11 @@ import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.common.MinecraftForge;
+import xyz.trolltom.iceandfire.ModUtils;
 
 import javax.annotation.Nullable;
+
+import static com.github.alexthe666.iceandfire.IceAndFire.logger;
 
 public class EntityCyclops extends EntityMob implements IAnimatedEntity, IBlacklistedFromStatues, IVillagerFear, IHumanoid {
 
@@ -63,6 +67,7 @@ public class EntityCyclops extends EntityMob implements IAnimatedEntity, IBlackl
     public PartEntity eyeEntity;
     private int animationTick;
     private Animation currentAnimation;
+    protected FakePlayerContainer fakePlayer;
 
     public EntityCyclops(World worldIn) {
         super(worldIn);
@@ -77,6 +82,13 @@ public class EntityCyclops extends EntityMob implements IAnimatedEntity, IBlackl
         ANIMATION_KICK = Animation.create(20);
         ANIMATION_ROAR = Animation.create(30);
 
+        this.fakePlayer = ModUtils.NEXUS_FACTORY.wrapFake(this);
+
+        EntityTroll troll = new EntityTroll(worldIn);
+    }
+
+    protected boolean canDestroyBlock(BlockPos pos) {
+        return !this.fakePlayer.cantBreak(pos);
     }
 
     protected PathNavigate createNavigator(World worldIn) {
@@ -305,9 +317,13 @@ public class EntityCyclops extends EntityMob implements IAnimatedEntity, IBlackl
                         if (state.getMaterial() != Material.AIR && !(block instanceof BlockBush) && !(block instanceof BlockLiquid) && block != Blocks.BEDROCK && (state.getBlock().isLeaves(state, world, pos) || state.getBlock().canSustainLeaves(state, world, pos))) {
                             this.motionX *= 0.6D;
                             this.motionZ *= 0.6D;
-                            if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) continue;
+                            if (MinecraftForge.EVENT_BUS.post(new GenericGriefEvent(this, a, b, c))) {
+                                logger.info("Block destroyed by event bus {} {} {}", pos.getX(), pos.getY(), pos.getZ());
+                                continue;
+                            }
                             if (block != Blocks.AIR) {
-                                if (!world.isRemote) {
+                                if (!world.isRemote && this.canDestroyBlock(pos)) {
+                                    logger.info("Block destroyed by world object {} {} {}", pos.getX(), pos.getY(), pos.getZ());
                                     world.destroyBlock(pos, true);
                                 }
                             }

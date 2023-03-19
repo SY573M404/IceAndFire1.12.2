@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import com.gamerforea.eventhelper.fake.FakePlayerContainer;
+import com.gamerforea.eventhelper.util.EventUtils;
 import com.github.alexthe666.iceandfire.IceAndFire;
 import com.github.alexthe666.iceandfire.api.FoodUtils;
 import com.github.alexthe666.iceandfire.api.event.GenericGriefEvent;
@@ -67,10 +69,13 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import xyz.trolltom.iceandfire.ModUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
+
+import static com.github.alexthe666.iceandfire.IceAndFire.logger;
 
 public abstract class EntityDragonBase extends EntityTameable implements ISyncMount, IFlyingMount, IMultipartEntity, IAnimatedEntity, IDragonFlute, IDeadMob, IVillagerFear, IAnimalFear, IDropArmor {
 
@@ -188,6 +193,7 @@ public abstract class EntityDragonBase extends EntityTameable implements ISyncMo
     private EntityDragonPart tail3Part;
     private EntityDragonPart tail4Part;
     private boolean isOverAir;
+    public final FakePlayerContainer fakePlayer;
 
     public EntityDragonBase(World world, DragonType type, double minimumDamage, double maximumDamage, double minimumHealth, double maximumHealth, double minimumSpeed, double maximumSpeed) {
         super(world);
@@ -217,6 +223,8 @@ public abstract class EntityDragonBase extends EntityTameable implements ISyncMo
         switchNavigator(0);
         randomizeAttacks();
         resetParts(1);
+
+        this.fakePlayer = ModUtils.NEXUS_FACTORY.wrapFake(this);
     }
 
     @Override
@@ -381,7 +389,16 @@ public abstract class EntityDragonBase extends EntityTameable implements ISyncMo
     }
 
     public boolean canDestroyBlock(BlockPos pos) {
-        return world.getBlockState(pos).getBlock().canEntityDestroy(world.getBlockState(pos), world, pos, this);
+        EntityPlayer ridingPlayer = this.getRidingPlayer();
+
+        return world.getBlockState(pos).getBlock().canEntityDestroy(
+                world.getBlockState(pos),
+                world, pos,
+                this
+        ) && (
+                (ridingPlayer != null && !EventUtils.cantBreak(ridingPlayer, pos)) ||
+                !this.fakePlayer.cantBreak(pos)
+        );
     }
 
     public boolean isMobDead() {

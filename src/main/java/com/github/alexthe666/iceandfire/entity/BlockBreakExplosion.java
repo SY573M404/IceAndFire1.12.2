@@ -1,5 +1,7 @@
 package com.github.alexthe666.iceandfire.entity;
 
+import com.gamerforea.eventhelper.fake.FakePlayerContainer;
+import com.gamerforea.eventhelper.util.EventUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -19,10 +21,13 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
+import xyz.trolltom.iceandfire.ModUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.github.alexthe666.iceandfire.IceAndFire.logger;
 
 public class BlockBreakExplosion extends Explosion {
     private final World worldObj;
@@ -34,8 +39,10 @@ public class BlockBreakExplosion extends Explosion {
     private final List<BlockPos> affectedBlockPositions;
     private final Map<EntityPlayer, Vec3d> playerKnockbackMap;
     private final Vec3d position;
+    private final EntityPlayer owner;
+    private final FakePlayerContainer fakePlayer;
 
-    public BlockBreakExplosion(World world, EntityCreature entity, double x, double y, double z, float size) {
+    public BlockBreakExplosion(World world, EntityCreature entity, double x, double y, double z, float size, EntityPlayer owner) {
         super(world, entity, x, y, z, size, true, true);
         this.affectedBlockPositions = Lists.newArrayList();
         this.playerKnockbackMap = Maps.newHashMap();
@@ -46,6 +53,31 @@ public class BlockBreakExplosion extends Explosion {
         this.explosionY = y;
         this.explosionZ = z;
         this.position = new Vec3d(explosionX, explosionY, explosionZ);
+        this.owner = owner;
+
+        if(this.owner == null) {
+            this.fakePlayer = ModUtils.NEXUS_FACTORY.wrapFake(world);
+        } else {
+            this.fakePlayer = null;
+        }
+    }
+
+    public BlockBreakExplosion(World world, EntityCreature entity, double x, double y, double z, float size) {
+        this(world, entity, x, y, z, size, null);
+    }
+
+    protected boolean canOwnerDestroyBlock(BlockPos pos) {
+        boolean canDestroy = false;
+
+        if(this.owner == null) {
+            canDestroy = !this.fakePlayer.cantBreak(pos);
+        } else {
+            canDestroy = !EventUtils.cantBreak(this.owner, pos);
+        }
+
+        logger.info("Explosion at {} {} {} with owner {} is allowed: {}", pos.getX(), pos.getY(), pos.getZ(), this.owner, canDestroy);
+
+        return canDestroy;
     }
 
     @Override
@@ -78,7 +110,9 @@ public class BlockBreakExplosion extends Explosion {
                             }
 
                             if (f > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this, this.worldObj, blockpos, iblockstate, f)) && iblockstate.getBlock().canEntityDestroy(iblockstate, this.worldObj, blockpos, this.exploder)) {
-                                set.add(blockpos);
+                                if (this.canOwnerDestroyBlock(blockpos)) {
+                                    set.add(blockpos);
+                                }
                             }
 
                             d4 += d0 * 0.30000001192092896D;
